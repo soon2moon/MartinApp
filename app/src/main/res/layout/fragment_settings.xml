@@ -113,7 +113,7 @@
         android:id="@+id/buttonApplyAndExit"
         android:layout_width="0dp"
         android:layout_height="60dp"
-        android:text="Einstellungen übernehmen &amp; Schließen"
+        android:text="Speichern &amp; Schließen"
         android:backgroundTint="@color/button_action_color"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"

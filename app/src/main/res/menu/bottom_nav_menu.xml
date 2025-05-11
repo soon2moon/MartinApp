@@ -5,5 +5,5 @@
         android:icon="@drawable/ic_home" android:title="Home" />
     <item
         android:id="@+id/nav_images"
-        android:icon="@drawable/ic_images" android:title="Bilder" />
+        android:icon="@drawable/ic_images" android:title="Auswahl" />
 </menu>
