@@ -1,0 +1,87 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "host.exp.exponent",
+    "module": "expo.modules.backgroundfetch",
+    "version": "13.1.5",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.13"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "expo.modules.backgroundfetch-13.1.5.aar",
+          "url": "expo.modules.backgroundfetch-13.1.5.aar",
+          "size": 16448,
+          "sha512": "35a5439a10c1761395c9185fc1077dc99f2a7c772586384a97065f85c3c724e03b77ebfd1ab944438654f198f0488a5cde025d29af2e0fd71847ec2607114380",
+          "sha256": "7329d452a6149ed4867a15c56dd624e6276522a610074118ebc0d02a00223b6a",
+          "sha1": "230a63182213229cdef28f8f5844b2acf46c39c7",
+          "md5": "3f576ff63779579e40f667a4024173b5"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk7",
+          "version": {
+            "requires": "2.0.21"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "expo.modules.backgroundfetch-13.1.5.aar",
+          "url": "expo.modules.backgroundfetch-13.1.5.aar",
+          "size": 16448,
+          "sha512": "35a5439a10c1761395c9185fc1077dc99f2a7c772586384a97065f85c3c724e03b77ebfd1ab944438654f198f0488a5cde025d29af2e0fd71847ec2607114380",
+          "sha256": "7329d452a6149ed4867a15c56dd624e6276522a610074118ebc0d02a00223b6a",
+          "sha1": "230a63182213229cdef28f8f5844b2acf46c39c7",
+          "md5": "3f576ff63779579e40f667a4024173b5"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "expo.modules.backgroundfetch-13.1.5-sources.jar",
+          "url": "expo.modules.backgroundfetch-13.1.5-sources.jar",
+          "size": 3461,
+          "sha512": "20eebb9eba4239ad138aa98fd15fba3aacaea19dc834094ee88b0668211a95f233d99eaa1cab0531ccf779d6aa6d36bb583d85e35fdb30f180289ce29a43e578",
+          "sha256": "3592ee09c21c9612c7b0c5664b5c258dd41010f4ae7c237e06a59448a75a3b52",
+          "sha1": "e26f2e4f89c1cac7e9177583852783c7a8180775",
+          "md5": "421b44442351feac85d0da9bb9607d14"
+        }
+      ]
+    }
+  ]
+}
