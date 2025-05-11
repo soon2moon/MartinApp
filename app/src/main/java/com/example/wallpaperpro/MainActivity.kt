@@ -390,4 +390,41 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    fun startNewImageCollection() {
+        Log.d("MainActivity", "startNewImageCollection aufgerufen - Auswahl wird zurückgesetzt.")
+
+        // 1. Aktuelle Liste der ausgewählten Bilder leeren
+        selectedImageUris.clear()
+
+        // 2. SharedPreferences aktualisieren
+        prefs.edit()
+            .remove(KEY_IMAGE_URIS) // Entfernt den Eintrag komplett oder setze ein leeres Set
+            // .putStringSet(KEY_IMAGE_URIS, emptySet()) // Alternative zum Entfernen
+            .putInt(KEY_CURRENT_INDEX, 0) // Index zurücksetzen
+            .apply()
+
+        // 3. Adapter für die Vorschau im SettingsFragment aktualisieren
+        if (::imageAdapterForSettingsPreview.isInitialized) {
+            imageAdapterForSettingsPreview.updateData(selectedImageUris)
+        }
+
+        // 4. UI der Fragmente informieren und aktualisieren
+        // (SettingsFragment wird seinen RecyclerView und Status aktualisieren, ImagesFragment seine Liste leeren)
+        val currentSettingsFragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as? SettingsFragment
+        currentSettingsFragment?.updateFragmentUI() // Allgemeine UI-Aktualisierung
+
+        val currentImagesFragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as? ImagesFragment
+        currentImagesFragment?.updateImageList() // Leert die Liste im ImagesFragment
+
+        // 5. Wenn der Dienst aktiv war, stoppen, da keine Bilder mehr vorhanden sind
+        if (isServiceActive()) {
+            setServiceActive(false, true) // Deaktiviert den Dienst und aktualisiert den Switch im SettingsFragment
+        } else {
+            // Wenn der Dienst nicht aktiv war, zumindest den Status-Text im SettingsFragment aktualisieren
+            updateSettingsFragmentStatus("Auswahl zurückgesetzt. Bitte neue Bilder wählen.")
+        }
+
+        Toast.makeText(this, "Auswahl zurückgesetzt. Bitte neue Bilder wählen.", Toast.LENGTH_LONG).show()
+    }
 }

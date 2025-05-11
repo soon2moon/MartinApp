@@ -1,5 +1,7 @@
 package com.example.wallpaperpro
 
+import android.app.AlertDialog // Import für AlertDialog, falls noch nicht vorhanden
+import android.content.Context
 import android.content.Intent // Für den ApplyAndExit Button (zum Home-Screen)
 import android.net.Uri
 import android.os.Bundle
@@ -10,6 +12,8 @@ import android.view.ViewGroup
 import android.widget.AdapterView // Für Spinner
 import android.widget.ArrayAdapter // Für Spinner
 import android.widget.Toast // Für den ApplyAndExit Button-Toast
+// import androidx.compose.ui.geometry.isEmpty
+// import androidx.compose.ui.semantics.text
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager // Für RecyclerView
 import com.example.wallpaperpro.databinding.FragmentSettingsBinding
@@ -20,18 +24,21 @@ class SettingsFragment : Fragment() {
 
     private var mainActivityInstance: MainActivity? = null
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is MainActivity) {
+            mainActivityInstance = context
+        } else {
+            Log.e("SettingsFragment", "Host-Activity ist NICHT MainActivity!")
+            // Optional: throw ClassCastException("$context must be MainActivity")
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
-        // Hole die MainActivity-Instanz sicher
-        if (activity is MainActivity) {
-            mainActivityInstance = activity as MainActivity
-        } else {
-            Log.e("SettingsFragment", "Host-Activity ist NICHT MainActivity! UI-Funktionalität ist eingeschränkt.")
-            // In einem realen Szenario könntest du hier das UI deaktivieren oder eine Fehlermeldung anzeigen
-        }
         return binding.root
     }
 
@@ -39,13 +46,12 @@ class SettingsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         if (mainActivityInstance == null) {
-            // Dieser Fall sollte durch die Prüfung in onCreateView eigentlich nicht eintreten,
-            // aber zur Sicherheit, falls das Fragment ohne korrekte Activity verwendet wird.
             Log.e("SettingsFragment", "MainActivity-Instanz ist null in onViewCreated. UI kann nicht initialisiert werden.")
             binding.textViewStatus.text = "Fehler: App-Kontext nicht gefunden."
-            // Deaktiviere Buttons oder andere Interaktionen, um Abstürze zu vermeiden
+            // UI-Elemente deaktivieren, um Abstürze zu vermeiden
             binding.buttonSelectImages.isEnabled = false
             binding.buttonSelectFolder.isEnabled = false
+            binding.buttonStartNewCollection.isEnabled = false // Auch den neuen Button berücksichtigen
             binding.buttonApplyAndExit.isEnabled = false
             binding.spinnerDelay.isEnabled = false
             binding.switchAutoChange.isEnabled = false
@@ -55,8 +61,8 @@ class SettingsFragment : Fragment() {
         // UI-Elemente initialisieren und Listener setzen
         setupPreviewRecyclerView()
         setupDelaySpinner()
-        setupAutoChangeSwitchListeners() // Listener separat einrichten
-        setupActionButtons()
+        setupAutoChangeSwitchListeners()
+        setupActionButtons() // Enthält jetzt auch den Listener für buttonStartNewCollection
 
         // Initialen Zustand der UI-Elemente laden/anzeigen
         updateFragmentUI()
@@ -66,6 +72,8 @@ class SettingsFragment : Fragment() {
         mainActivityInstance?.let { mainAct ->
             binding.recyclerViewSelectedImages.layoutManager =
                 LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            // Wichtig: Stelle sicher, dass imageAdapterForSettingsPreview in MainActivity
+            // mit R.layout.item_selected_image initialisiert wird.
             binding.recyclerViewSelectedImages.adapter = mainAct.imageAdapterForSettingsPreview
             updatePreviewVisibility(mainAct.selectedImageUris)
         }
@@ -78,7 +86,6 @@ class SettingsFragment : Fragment() {
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             binding.spinnerDelay.adapter = adapter
 
-            // Setze die initiale Auswahl basierend auf den SharedPreferences der MainActivity
             val delayValuesMs = resources.getStringArray(R.array.delay_options_values_ms).map { it.toLong() }
             val currentDelay = mainAct.prefs.getLong(mainAct.KEY_DELAY_MS, mainAct.defaultDelayMs)
             val currentDelayIndex = delayValuesMs.indexOf(currentDelay).takeIf { it != -1 } ?: 0
@@ -109,11 +116,13 @@ class SettingsFragment : Fragment() {
                     } else {
                         updateStatusText("Bitte zuerst Bilder auswählen.")
                         binding.switchAutoChange.isChecked = false // Switch direkt zurücksetzen
-                        mainAct.setServiceActive(false, false) // Sicherstellen, dass es auch in Prefs AUS ist
+                        mainAct.setServiceActive(false, false) // Service-Status in Prefs aktualisieren
                     }
                 } else {
                     mainAct.cancelWallpaperAlarm() // MainActivity setzt globalen Status und cancelt Alarm
-                    updateStatusText("Automatischer Wechsel gestoppt.") // Status im Fragment setzen
+                    // Der Status-Text wird in der Regel von cancelWallpaperAlarm über updateSettingsFragmentStatus gesetzt.
+                    // Man kann ihn hier aber auch explizit setzen, falls nötig:
+                    updateStatusText("Automatischer Wechsel gestoppt.")
                 }
             }
         }
@@ -122,26 +131,48 @@ class SettingsFragment : Fragment() {
     private fun setupActionButtons() {
         mainActivityInstance?.let { mainAct ->
             binding.buttonSelectImages.setOnClickListener {
+                // Ruft handleSelectedIndividualImageUris in MainActivity auf,
+                // welche jetzt Bilder HINZUFÜGT.
                 mainAct.pickImagesLauncher.launch("image/*")
             }
             binding.buttonSelectFolder.setOnClickListener {
                 mainAct.pickDirectoryLauncher.launch(null)
             }
+
+            // Listener für den Button "Auswahl zurücksetzen"
+            binding.buttonStartNewCollection.setOnClickListener {
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Auswahl zurücksetzen")
+                    .setMessage("Möchtest Du wirklich alle ausgewählten Bilder entfernen und eine neue Auswahl beginnen?")
+                    .setPositiveButton("Ja") { dialog, _ ->
+                        mainAct.startNewImageCollection() // Diese Methode in MainActivity löscht die Auswahl
+                        dialog.dismiss()
+                    }
+                    .setNegativeButton("Nein") { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .show()
+            }
+
             binding.buttonApplyAndExit.setOnClickListener {
                 val isServiceCurrentlyActive = binding.switchAutoChange.isChecked
-                mainAct.setServiceActive(isServiceCurrentlyActive, false) // Sicherstellen, dass der aktuelle Switch-Stand gespeichert ist
+                // Der aktuelle Zustand des Switches wurde bereits durch seinen Listener in den Prefs gespeichert
+                // über mainAct.setServiceActive(isServiceCurrentlyActive, false).
+                // Ein erneuter Aufruf hier ist optional, aber schadet nicht, um den letzten Stand zu sichern.
+                mainAct.setServiceActive(isServiceCurrentlyActive, false)
 
                 if (isServiceCurrentlyActive) {
                     if (mainAct.selectedImageUris.isNotEmpty()) {
                         Toast.makeText(requireContext(), "Einstellungen angewendet. Automatischer Wechsel aktiv.", Toast.LENGTH_LONG).show()
-                        mainAct.checkExactAlarmPermissionAndSchedule() // Stellt sicher, dass der Alarm läuft
+                        mainAct.checkExactAlarmPermissionAndSchedule()
                     } else {
                         Toast.makeText(requireContext(), "Keine Bilder ausgewählt. Automatischer Wechsel nicht gestartet.", Toast.LENGTH_LONG).show()
-                        // Der Switch sollte bereits durch die obige Logik (falls keine Bilder) auf false sein
-                        // und setServiceActive wurde entsprechend aufgerufen.
-                        if (binding.switchAutoChange.isChecked) binding.switchAutoChange.isChecked = false; // explizit
-                        mainAct.setServiceActive(false, false) // doppelt hält besser für Prefs
-                        mainAct.cancelWallpaperAlarm()
+                        if (binding.switchAutoChange.isChecked) { // Falls der Switch noch an ist, obwohl keine Bilder da sind
+                            binding.switchAutoChange.isChecked = false // Löst Listener aus, der setServiceActive(false) aufruft
+                        } else { // Falls Switch schon aus war
+                            mainAct.setServiceActive(false, false) // Nur Prefs aktualisieren
+                        }
+                        mainAct.cancelWallpaperAlarm() // Sicherstellen, dass kein Alarm läuft
                     }
                 } else {
                     Toast.makeText(requireContext(), "Einstellungen gespeichert. Automatischer Wechsel ist deaktiviert.", Toast.LENGTH_LONG).show()
@@ -166,22 +197,20 @@ class SettingsFragment : Fragment() {
 
         mainActivityInstance?.let { mainAct ->
             // Switch-Zustand aktualisieren
-            val currentCheckedState = binding.switchAutoChange.isChecked
-            val serviceActiveState = mainAct.isServiceActive()
-            if (currentCheckedState != serviceActiveState) {
-                binding.switchAutoChange.isChecked = serviceActiveState
+            // Nur setzen, wenn es eine Abweichung gibt, um unnötige Listener-Aufrufe zu vermeiden (obwohl setOnCheckedChangeListener das meist richtig handhabt)
+            if (binding.switchAutoChange.isChecked != mainAct.isServiceActive()) {
+                binding.switchAutoChange.isChecked = mainAct.isServiceActive()
             }
 
             // RecyclerView Vorschau aktualisieren
-            // Der Adapter in MainActivity (imageAdapterForSettingsPreview) sollte bereits die aktuellen Daten haben.
-            // Wir müssen nur dem Adapter in diesem Fragment sagen, dass er sich neu zeichnen soll,
-            // oder die Sichtbarkeit anpassen.
-            mainAct.imageAdapterForSettingsPreview.updateData(mainAct.selectedImageUris) // Sicherstellen, dass der Adapter die neuesten Daten hat
+            // Zugriff auf den Adapter über die mainAct Instanz
+            mainAct.imageAdapterForSettingsPreview.updateData(mainAct.selectedImageUris)
+
             updatePreviewVisibility(mainAct.selectedImageUris)
 
             // Status-Text aktualisieren basierend auf globalem Zustand
             val status: String
-            val currentServiceState = mainAct.isServiceActive() // Hole den aktuellen Status
+            val currentServiceState = mainAct.isServiceActive()
             val currentDelayMs = mainAct.prefs.getLong(mainAct.KEY_DELAY_MS, mainAct.defaultDelayMs)
             val seconds = currentDelayMs / 1000
 
@@ -189,14 +218,11 @@ class SettingsFragment : Fragment() {
                 status = "Automatischer Wechsel aktiv.\nNächster Wechsel in $seconds Sek."
             } else if (currentServiceState && mainAct.selectedImageUris.isEmpty()) {
                 status = "Keine Bilder für aktiven Wechsel. Bitte auswählen."
-                // Wenn Service aktiv sein soll, aber keine Bilder da sind, sollte der Switch auch aus sein.
-                // Dies wird idealerweise durch die Logik in setServiceActive / checkExactAlarm... in MainActivity gehandhabt
-                // und dann hier durch binding.switchAutoChange.isChecked = mainAct.isServiceActive() reflektiert.
+                // Switch sollte hier bereits durch setServiceActive(false, true) in MainActivity aktualisiert worden sein
                 if(binding.switchAutoChange.isChecked) binding.switchAutoChange.isChecked = false;
-
             } else if (mainAct.selectedImageUris.isEmpty()){
                 status = "Bitte Bilder auswählen."
-            } else {
+            } else { // Nicht aktiv, aber Bilder vorhanden
                 status = "Automatischer Wechsel ist gestoppt."
             }
             binding.textViewStatus.text = status
@@ -212,21 +238,25 @@ class SettingsFragment : Fragment() {
 
     // Methode, um nur den Status-Text gezielt zu setzen (kann von MainActivity genutzt werden)
     fun updateStatusText(message: String) {
-        if (_binding != null) {
+        if (_binding != null) { // Nur wenn Binding existiert
             binding.textViewStatus.text = message
         }
     }
 
     override fun onResume() {
         super.onResume()
-        // Stelle sicher, dass die UI den aktuellen Zustand widerspiegelt, wenn das Fragment wieder sichtbar wird
         Log.d("SettingsFragment", "onResume aufgerufen, rufe updateFragmentUI")
-        updateFragmentUI()
+        updateFragmentUI() // Stellt sicher, dass die UI den aktuellen Zustand widerspiegelt
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         Log.d("SettingsFragment", "onDestroyView aufgerufen")
         _binding = null // Wichtig, um Memory Leaks zu vermeiden
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        mainActivityInstance = null // Referenz aufräumen
     }
 }

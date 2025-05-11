@@ -11,4 +11,5 @@
     <color name="button_selection_color">#FF03A9F4</color>
     <color name="button_action_color">#FF4CAF50</color>
     <color name="settings_box_background">#F5F5F5</color>
+    <color name="button_destructive_color">#FFD32F2F</color>
 </resources>

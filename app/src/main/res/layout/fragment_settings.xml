@@ -5,72 +5,69 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    tools:context=".MainActivity">
+    tools:context=".SettingsFragment"> <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/settingsBox"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/settings_box_border"
+    android:padding="16dp"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/settingsBox"
+    <TextView
+        android:id="@+id/textViewSelectedImagesLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ausgewählte Bilder:"
+        android:textSize="16sp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewSelectedImages"
+        android:layout_width="0dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@id/textViewSelectedImagesLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:listitem="@layout/item_selected_image" />
+
+    <TextView
+        android:id="@+id/textViewDelayLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Wechselintervall:"
+        android:layout_marginTop="16dp"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/recyclerViewSelectedImages"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Spinner
+        android:id="@+id/spinnerDelay"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@drawable/settings_box_border"
-        android:padding="16dp"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="8dp"
+        app:layout_constraintTop_toTopOf="@id/textViewDelayLabel"
+        app:layout_constraintBottom_toBottomOf="@id/textViewDelayLabel"
+        app:layout_constraintStart_toEndOf="@id/textViewDelayLabel"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switchAutoChange"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Automatischer Wechsel"
+        android:layout_marginTop="24dp"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/spinnerDelay"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-        <TextView
-            android:id="@+id/textViewSelectedImagesLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ausgewählte Bilder:"
-            android:textSize="16sp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerViewSelectedImages"
-            android:layout_width="0dp"
-            android:layout_height="100dp"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintTop_toBottomOf="@id/textViewSelectedImagesLabel"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            tools:listitem="@layout/item_selected_image"
-            tools:itemCount="5" />
-
-        <TextView
-            android:id="@+id/textViewDelayLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Wechselintervall:"
-            android:layout_marginTop="16dp"
-            android:textSize="16sp"
-            app:layout_constraintTop_toBottomOf="@id/recyclerViewSelectedImages"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <Spinner
-            android:id="@+id/spinnerDelay"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            app:layout_constraintTop_toTopOf="@id/textViewDelayLabel"
-            app:layout_constraintBottom_toBottomOf="@id/textViewDelayLabel"
-            app:layout_constraintStart_toEndOf="@id/textViewDelayLabel"
-            app:layout_constraintEnd_toEndOf="parent"/>
-
-        <com.google.android.material.materialswitch.MaterialSwitch
-            android:id="@+id/switchAutoChange"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Automatischer Wechsel"
-            android:layout_marginTop="24dp"
-            android:textSize="16sp"
-            app:layout_constraintTop_toBottomOf="@id/spinnerDelay"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
         android:id="@+id/textViewStatus"
@@ -86,13 +83,11 @@
         app:layout_constraintVertical_bias="0.0"
         android:layout_marginBottom="16dp"/>
 
-
     <Button
         android:id="@+id/buttonSelectImages"
-        android:layout_width="0dp"
+        style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Einzelne Bilder auswählen"
-        android:backgroundTint="@color/button_selection_color"
+        android:text="Einzelne Bilder hinzufügen"
         app:layout_constraintBottom_toTopOf="@id/buttonSelectFolder"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -100,11 +95,19 @@
 
     <Button
         android:id="@+id/buttonSelectFolder"
+        style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Ordner auswählen"
+        app:layout_constraintBottom_toTopOf="@id/buttonStartNewCollection" app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="8dp"/>
+
+    <Button
+        android:id="@+id/buttonStartNewCollection"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Ganzen Ordner auswählen"
-        android:backgroundTint="@color/button_selection_color"
-        app:layout_constraintBottom_toTopOf="@id/buttonApplyAndExit"
+        android:text="Auswahl zurücksetzen"
+        android:backgroundTint="@color/button_destructive_color" android:textColor="@android:color/white" app:layout_constraintBottom_toTopOf="@id/buttonApplyAndExit"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginBottom="16dp"/>
@@ -113,7 +116,7 @@
         android:id="@+id/buttonApplyAndExit"
         android:layout_width="0dp"
         android:layout_height="60dp"
-        android:text="Speichern &amp; Schließen"
+        android:text="Einstellungen übernehmen &amp; Schließen"
         android:backgroundTint="@color/button_action_color"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
