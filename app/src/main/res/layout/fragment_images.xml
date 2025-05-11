@@ -15,7 +15,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-        app:spanCount="3"
-        tools:listitem="@layout/item_selected_image"
+        app:spanCount="3" tools:listitem="@layout/item_selected_image"
         android:padding="8dp" android:clipToPadding="false"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

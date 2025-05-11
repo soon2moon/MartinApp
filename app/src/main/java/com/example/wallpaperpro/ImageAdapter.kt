@@ -2,29 +2,37 @@ package com.example.wallpaperpro
 
 import android.net.Uri
 import android.view.LayoutInflater
+import android.view.View // Import für View hinzufügen
 import android.view.ViewGroup
+import android.widget.ImageView // Import für ImageView hinzufügen
 import androidx.recyclerview.widget.RecyclerView
-import com.example.wallpaperpro.databinding.ItemSelectedImageBinding // Für item_selected_image.xml
+// Die spezifischen Binding-Klassen werden hier nicht mehr direkt verwendet,
+// da wir generischer auf das ImageView zugreifen.
 
-class ImageAdapter(private var imageUris: List<Uri>) :
-    RecyclerView.Adapter<ImageAdapter.ImageViewHolder>() {
+class ImageAdapter(
+    private var imageUris: List<Uri>,
+    private val itemLayoutResId: Int // ID der zu verwendenden Layout-Datei (z.B. R.layout.item_selected_image)
+) : RecyclerView.Adapter<ImageAdapter.ImageViewHolder>() {
 
-    class ImageViewHolder(val binding: ItemSelectedImageBinding) : RecyclerView.ViewHolder(binding.root)
+    // Der ViewHolder ist jetzt generischer, da er nur ein ImageView erwartet.
+    class ImageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val imageViewThumbnail: ImageView = itemView.findViewById(R.id.imageViewThumbnail)
+        // Stelle sicher, dass beide Layout-Dateien (item_selected_image.xml und item_gallery_image.xml)
+        // ein ImageView mit der ID "@+id/imageViewThumbnail" enthalten.
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
-        val binding = ItemSelectedImageBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ImageViewHolder(binding)
+        val itemView = LayoutInflater.from(parent.context)
+            .inflate(itemLayoutResId, parent, false) // Verwendet die übergebene Layout-ID
+        return ImageViewHolder(itemView)
     }
 
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         val uri = imageUris[position]
-        // Einfaches Laden der URI. Für Produktion: Glide/Coil oder sorgfältiges Bitmap-Handling
         try {
-            holder.binding.imageViewThumbnail.setImageURI(uri)
+            holder.imageViewThumbnail.setImageURI(uri)
         } catch (e: Exception) {
-            // Fallback, falls URI nicht direkt geladen werden kann (z.B. Berechtigungsfehler nach einiger Zeit)
-            // Du könntest hier ein Platzhalterbild setzen
-            holder.binding.imageViewThumbnail.setImageResource(R.mipmap.ic_launcher) // Beispiel-Fallback
+            holder.imageViewThumbnail.setImageResource(R.mipmap.ic_launcher) // Beispiel-Fallback
             e.printStackTrace()
         }
     }
@@ -33,6 +41,6 @@ class ImageAdapter(private var imageUris: List<Uri>) :
 
     fun updateData(newImageUris: List<Uri>) {
         imageUris = newImageUris
-        notifyDataSetChanged() // Einfachste Methode; für bessere Performance DiffUtil verwenden
+        notifyDataSetChanged()
     }
 }

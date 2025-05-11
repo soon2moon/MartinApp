@@ -79,7 +79,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-        imageAdapterForSettingsPreview = ImageAdapter(selectedImageUris) // Wird mit Daten aus loadInitialState gefüllt
+        imageAdapterForSettingsPreview = ImageAdapter(selectedImageUris, R.layout.item_selected_image) // Wird mit Daten aus loadInitialState gefüllt
 
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             var selectedFragment: Fragment? = null
