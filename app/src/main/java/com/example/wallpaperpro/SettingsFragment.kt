@@ -62,10 +62,37 @@ class SettingsFragment : Fragment() {
         setupPreviewRecyclerView()
         setupDelaySpinner()
         setupAutoChangeSwitchListeners()
+        setupWallpaperTargetRadioGroup() // NEUE Methode aufrufen
         setupActionButtons() // Enthält jetzt auch den Listener für buttonStartNewCollection
 
         // Initialen Zustand der UI-Elemente laden/anzeigen
         updateFragmentUI()
+    }
+
+    // NEUE Methode zum Einrichten der RadioGroup
+    private fun setupWallpaperTargetRadioGroup() {
+        mainActivityInstance?.let { mainAct ->
+            val currentTarget =
+                mainAct.prefs.getInt(mainAct.KEY_WALLPAPER_TARGET, mainAct.DEFAULT_WALLPAPER_TARGET)
+            when (currentTarget) {
+                mainAct.TARGET_HOME -> binding.radioButtonTargetHome.isChecked = true
+                mainAct.TARGET_LOCK -> binding.radioButtonTargetLockscreen.isChecked = true
+                mainAct.TARGET_BOTH -> binding.radioButtonTargetBoth.isChecked = true
+                else -> binding.radioButtonTargetBoth.isChecked = true // Fallback
+            }
+
+            binding.radioGroupWallpaperTarget.setOnCheckedChangeListener { group, checkedId ->
+                val newTarget = when (checkedId) {
+                    R.id.radioButtonTargetHome -> mainAct.TARGET_HOME
+                    R.id.radioButtonTargetLockscreen -> mainAct.TARGET_LOCK
+                    R.id.radioButtonTargetBoth -> mainAct.TARGET_BOTH
+                    else -> mainAct.DEFAULT_WALLPAPER_TARGET
+                }
+                mainAct.prefs.edit().putInt(mainAct.KEY_WALLPAPER_TARGET, newTarget).apply()
+                Log.d("SettingsFragment", "Wallpaper-Ziel geändert auf: $newTarget")
+                // Kein direkter Alarm-Neustart hier nötig, die Einstellung wird beim nächsten Wechsel verwendet.
+            }
+        }
     }
 
     private fun setupPreviewRecyclerView() {
@@ -196,6 +223,14 @@ class SettingsFragment : Fragment() {
         }
 
         mainActivityInstance?.let { mainAct ->
+            // RadioButton Zustand basierend auf Prefs setzen (wird schon in setupWallpaperTargetRadioGroup gemacht,
+            // aber hier zur Sicherheit, falls das Fragment neu aufgebaut wird)
+            val currentTarget = mainAct.prefs.getInt(mainAct.KEY_WALLPAPER_TARGET, mainAct.DEFAULT_WALLPAPER_TARGET)
+            when (currentTarget) {
+                mainAct.TARGET_HOME -> binding.radioButtonTargetHome.isChecked = true
+                mainAct.TARGET_LOCK -> binding.radioButtonTargetLockscreen.isChecked = true
+                mainAct.TARGET_BOTH -> binding.radioButtonTargetBoth.isChecked = true
+            }
             // Switch-Zustand aktualisieren
             // Nur setzen, wenn es eine Abweichung gibt, um unnötige Listener-Aufrufe zu vermeiden (obwohl setOnCheckedChangeListener das meist richtig handhabt)
             if (binding.switchAutoChange.isChecked != mainAct.isServiceActive()) {

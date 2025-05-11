@@ -1,5 +1,6 @@
 package com.example.wallpaperpro
 
+import androidx.appcompat.app.AppCompatDelegate // Import hinzufügen
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -37,6 +38,14 @@ class MainActivity : AppCompatActivity() {
     val KEY_IS_SERVICE_ACTIVE = "is_service_active"
     val defaultDelayMs: Long = 10000L
 
+    val KEY_WALLPAPER_TARGET = "wallpaper_target" // Neuer Key
+
+    // Konstanten für die Zielauswahl
+    val TARGET_HOME = 1
+    val TARGET_LOCK = 2
+    val TARGET_BOTH = 3
+    val DEFAULT_WALLPAPER_TARGET = TARGET_BOTH // Standardmäßig beide setzen
+
     val pickImagesLauncher =
         registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
             if (!uris.isNullOrEmpty()) {
@@ -64,14 +73,16 @@ class MainActivity : AppCompatActivity() {
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Dark Mode für die gesamte App erzwingen (vor super.onCreate und setContentView)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-        // ImageAdapter für SettingsFragment (ohne LongClick-Listener)
+        // ImageAdapter für SettingsFragment Vorschau (listener ist null, da dort keine Aktionen ausgelöst werden)
         imageAdapterForSettingsPreview = ImageAdapter(selectedImageUris, R.layout.item_selected_image, null)
-
 
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             var selectedFragment: Fragment? = null
